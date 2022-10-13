@@ -4,6 +4,7 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var db =mongoose.connect('mongodb://localhost/swag-shop');
 
+var ObjectId = require('mongodb').ObjectID;
 var Product =require('./model/product');
 var WishList =require('./model/wishlist');
 
@@ -41,8 +42,20 @@ app.get('/product', function(request, response){
     });
 });
 
-app.delete('/product/id', function(request, response){
-    var deleteId = new Product(request.body.id);
+app.delete('/product/:pricenum', function(request, response){
+    Product.findOne({_id: ObjectId(request.params.pricenum)},function(err, product){
+        if(err){
+            response.status(500).send({error:"Could not find product"});
+        }else{
+           Product.deleteOne({_id:ObjectId(request.params.pricenum)},function(err, product){
+               if(err){
+                   response.status(500).send({error:"Could not delete successfully"});
+               }else{
+                   response.send(product);
+               }
+            });
+        }
+    });
 })
 
 app.get('/wishlist', function(request,response){
